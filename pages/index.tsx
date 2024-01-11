@@ -6,6 +6,7 @@ import {
   DotsVerticalIcon,
   PaperPlaneIcon,
 } from "@radix-ui/react-icons";
+import { chatResponse } from "@/lib/openai";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -17,19 +18,11 @@ type Message = {
 
 export default function Home() {
   const [open, setOpen] = useState<boolean>(false);
-  const [messages, setMessages] = useState<Message[]>([
-    { role: "user", content: "Who won the World Series in 2020?" },
-    {
+  const [query,setQuery]=useState<string>("");
+  const [messages, setMessages] = useState<Message[]>([{
       role: "assistant",
-      content: "The Los Angeles Dodgers won the World Series in 2020.",
+      content: "Hi there, How can I help you today?",
     },
-    { role: "user", content: "Where was it played?" },
-    { role: "user", content: "Who won the World Series in 2020?" },
-    {
-      role: "assistant",
-      content: "The Los Angeles Dodgers won the World Series in 2020.",
-    },
-    { role: "user", content: "Where was it played?" },
   ]);
   const handleBoatClick = () => {
     setOpen(true);
@@ -39,6 +32,19 @@ export default function Home() {
     setOpen(false);
     return;
   };
+  const handleQueryChange=(e)=>{
+    setQuery(e.target.value)
+  }
+  const handleQuerySubmit=async ()=>{
+    setMessages([...messages,{role:"user",content:query}]);
+    setQuery("");
+    try {
+      const res=await chatResponse(messages);
+      setMessages([...messages,{role:"assistant",content:res}]);
+    } catch (error) {
+      console.log(error)
+    }
+  }
   return (
     <main
       className={`w-full h-screen overflow-scroll relative ${inter.className}`}
@@ -87,7 +93,7 @@ export default function Home() {
                 <div
                   className={`max-w-64 text-white p-2 mb-2 rounded-lg ${
                     message.role === "user"
-                      ? "bg-gradient-to-r from-blue-500 to-blue-700 self-end"
+                      ? "bg-gradient-to-r from-blue-700 to-blue-500 self-end"
                       : "bg-gradient-to-l from-gray-500 to-gray-700 self-start"
                   }`}
                   key={index}
@@ -100,9 +106,12 @@ export default function Home() {
           <div className="w-full flex items-center p-2">
             <input
               type="text"
+              placeholder="Enter your queries..."
               className="w-11/12 p-1 border-b border-gray-600 focus:outline-none"
+              value={query}
+              onChange={handleQueryChange}
             />
-            <button className="w-1/12 flex justify-center items-center">
+            <button onClick={handleQuerySubmit} className="w-1/12 flex justify-center items-center">
               <PaperPlaneIcon className="text-gray-600 w-5 h-5" />
             </button>
           </div>
