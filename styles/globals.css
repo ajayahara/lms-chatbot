@@ -10,3 +10,8 @@ body{
 .example::-webkit-scrollbar {
   display: none;
 }
+.text-gradient {
+  background: linear-gradient(45deg, #1b66d6, #120b60);
+  -webkit-background-clip: text;
+  color: transparent;
+}

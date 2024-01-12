@@ -3,7 +3,10 @@ type Message = {
   role: "system" | "user" | "assistant";
   content: string;
 };
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || "" , dangerouslyAllowBrowser: true});
+const openai = new OpenAI({
+  apiKey:process.env.OPENAI_API_KEY||"",
+  dangerouslyAllowBrowser:true
+});
 export const chatResponse = async (messages:Message[]) => {
   const completion = await openai.chat.completions.create({
     messages: [
