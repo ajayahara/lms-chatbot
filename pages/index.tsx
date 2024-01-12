@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { Inter } from "next/font/google";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   CaretDownIcon,
   ChatBubbleIcon,
@@ -50,6 +50,18 @@ export default function Home() {
     if (e.key !== "Enter") return;
     handleQuerySubmit();
   };
+
+  useEffect(() => {
+    const storedMessagesString = localStorage.getItem("chat");
+    if (storedMessagesString != null) {
+      setMessages(JSON.parse(storedMessagesString));
+    }
+  }, []);
+  useEffect(() => {
+    if(messages.length==1) return;
+    localStorage.setItem("chat", JSON.stringify(messages));
+  }, [messages]);
+
   return (
     <main
       className={`w-full h-screen overflow-scroll relative ${inter.className}`}
