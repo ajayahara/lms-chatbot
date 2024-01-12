@@ -46,6 +46,10 @@ export default function Home() {
       console.log(error);
     }
   };
+  const handleEnterClick = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== "Enter") return;
+    handleQuerySubmit();
+  };
   return (
     <main
       className={`w-full h-screen overflow-scroll relative ${inter.className}`}
@@ -100,6 +104,7 @@ export default function Home() {
               className="w-11/12 p-1 border-b border-gray-400 focus:outline-none"
               value={query}
               onChange={handleQueryChange}
+              onKeyDown={handleEnterClick}
             />
             <button
               onClick={handleQuerySubmit}
