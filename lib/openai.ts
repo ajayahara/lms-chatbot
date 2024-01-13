@@ -4,7 +4,7 @@ type Message = {
   content: string;
 };
 const openai = new OpenAI({
-  apiKey:process.env.OPENAI_API_KEY||"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",
+  apiKey:process.env.OPENAI_API_KEY||"",
   dangerouslyAllowBrowser:true
 });
 export const chatResponse = async (messages:Message[]) => {
