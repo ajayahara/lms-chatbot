@@ -18,49 +18,74 @@ type Message = {
 
 export default function Home() {
   const [open, setOpen] = useState<boolean>(false);
+  const [ChatBubble, setChatBubble] = useState<boolean>(false);
   const [query, setQuery] = useState<string>("");
+  const [selectedChat, setSelectedChat] = useState<number | null>(null);
+  const [historyMessages, setHistoryMessages] = useState<Message[]>([]);
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
       content: "Hi there 👋, How can I help you today?",
     },
   ]);
+
+  console.log(messages);
+
   const handleBoatClick = () => {
     setOpen(!open);
-    return;
   };
+
   const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
   };
+
   const handleQuerySubmit = async () => {
     if (!query) return;
-    setMessages((pre) => [...pre, { role: "user", content: query }]);
+
+    // Add user message to both history and current messages
+    const userMessage = { role: "user", content: query };
+    setMessages((prevMessages) => [...prevMessages, userMessage]);
+    setHistoryMessages((prevHistory) => [...prevHistory, { ...userMessage }]);
+
     setQuery("");
+
     try {
-      const res = await chatResponse([
-        ...messages,
-        { role: "user", content: query },
-      ]);
-      setMessages((pre) => [...pre, { role: "assistant", content: res }]);
+      const assistantResponse = await chatResponse([...messages, userMessage]);
+      const assistantMessage = {
+        role: "assistant",
+        content: assistantResponse,
+      };
+
+      setMessages((prevMessages) => [...prevMessages, assistantMessage]);
+      setHistoryMessages((prevHistory) => [...prevHistory, { ...assistantMessage }]);
     } catch (error) {
       console.log(error);
     }
   };
+
   const handleEnterClick = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key !== "Enter") return;
-    handleQuerySubmit();
+    if (e.key === "Enter") {
+      handleQuerySubmit();
+    }
+  };
+  const handleHistoryItemClick = (index: number) => {
+    setSelectedChat(index);
+  };
+  const handleChatButtonClick = () => {
+    setChatBubble(!ChatBubble);
   };
 
   useEffect(() => {
     const storedMessagesString = localStorage.getItem("chat");
     if (storedMessagesString != null) {
-      setMessages(JSON.parse(storedMessagesString));
+      setHistoryMessages(JSON.parse(storedMessagesString));
     }
   }, []);
+
   useEffect(() => {
-    if(messages.length==1) return;
-    localStorage.setItem("chat", JSON.stringify(messages));
-  }, [messages]);
+    if (messages.length === 1) return;
+    localStorage.setItem("chat", JSON.stringify(historyMessages));
+  }, [historyMessages]);
 
   return (
     <main
@@ -93,20 +118,37 @@ export default function Home() {
           </div>
           {/* Chat Messages */}
           <div className="flex flex-col w-full p-2 h-3/4 overflow-y-scroll text-sm example">
-            {messages.map((message, index) => {
-              return (
-                <div
-                  className={`max-w-64 text-white p-2 mb-2 rounded-lg ${
-                    message.role === "user"
-                      ? "bg-blue-600 self-end"
-                      : "bg-gray-400 shadow self-start"
-                  }`}
-                  key={index}
-                >
-                  {message.content}
-                </div>
-              );
-            })}
+            {ChatBubble ? (
+              <>
+                {historyMessages.map((message, index) => (
+                  <div
+                    className={`max-w-64 text-white p-2 mb-2 rounded-lg ${
+                      message.role === "user"
+                        ? "bg-blue-600 self-end"
+                        : "bg-gray-400 shadow self-start"
+                    }`}
+                    key={index}
+                  >
+                    {message.content}
+                  </div>
+                ))}
+              </>
+            ) : (
+              <div>
+                {messages.map((message, index) => (
+                  <div
+                    className={`max-w-64 text-white p-2 mb-2 rounded-lg ${
+                      message.role === "user"
+                        ? "bg-blue-600 self-end"
+                        : "bg-gray-400 shadow self-start"
+                    }`}
+                    key={index}
+                  >
+                    {message.content}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
           {/* Chat Input */}
           <div className="w-full flex gap-2 items-center p-2">
@@ -129,7 +171,7 @@ export default function Home() {
           <div className="flex justify-between items-center px-2 pt-1 pb-3">
             <div className="flex gap-2">
               <button
-                onClick={handleQuerySubmit}
+                onClick={handleChatButtonClick}
                 className="flex justify-center items-center"
               >
                 <ChatBubbleIcon className="text-gray-500 w-5 h-5" />
