@@ -3,10 +3,10 @@ import { Inter } from "next/font/google";
 import { useEffect, useState } from "react";
 import {
   CaretDownIcon,
-  ChatBubbleIcon,
-  PaperPlaneIcon,
+  CounterClockwiseClockIcon,
 } from "@radix-ui/react-icons";
 import { chatResponse } from "@/lib/openai";
+import { DotPulseLoading } from "@/components/bot/loader/DotPulseLoading";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -17,10 +17,10 @@ type Message = {
 };
 
 export default function Home() {
+  // State
   const [open, setOpen] = useState<boolean>(false);
   const [ChatBubble, setChatBubble] = useState<boolean>(false);
   const [query, setQuery] = useState<string>("");
-  const [selectedChat, setSelectedChat] = useState<number | null>(null);
   const [historyMessages, setHistoryMessages] = useState<Message[]>([]);
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -28,63 +28,49 @@ export default function Home() {
       content: "Hi there 👋, How can I help you today?",
     },
   ]);
-
-  console.log(messages);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
+  const [interactionId, setInteractionId] = useState(null);
 
   const handleBoatClick = () => {
     setOpen(!open);
   };
 
   const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (error) {
+      setError("");
+    }
     setQuery(e.target.value);
   };
-
-  const handleQuerySubmit = async () => {
+  const handleEnterClick = async (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== "Enter") return;
     if (!query) return;
-
-    // Add user message to both history and current messages
-    const userMessage:Message = { role: "user", content: query };
+    setLoading(true);
+    const userMessage: Message = { role: "user", content: query };
     setMessages((prevMessages) => [...prevMessages, userMessage]);
-    setHistoryMessages((prevHistory) => [...prevHistory, { ...userMessage }]);
-
+    setHistoryMessages((prevHistory) => [...prevHistory, userMessage]);
     setQuery("");
     try {
       const assistantResponse = await chatResponse([...messages, userMessage]);
-      const assistantMessage:Message = {
+      const assistantMessage: Message = {
         role: "assistant",
         content: assistantResponse,
       };
       setMessages((prevMessages) => [...prevMessages, assistantMessage]);
-      setHistoryMessages((prevHistory) => [...prevHistory, { ...assistantMessage }]);
-    } catch (error) {
-      console.log(error);
+      setHistoryMessages((prevHistory) => [
+        ...prevHistory,
+        { ...assistantMessage },
+      ]);
+    } catch (err) {
+      console.log(err);
+      setError("Error while connecting to server");
     }
+    setLoading(false);
   };
-
-  const handleEnterClick = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      handleQuerySubmit();
-    }
-  };
-  const handleHistoryItemClick = (index: number) => {
-    setSelectedChat(index);
-  };
-  const handleChatButtonClick = () => {
+  
+  const handleHistoryButtonClick = () => {
     setChatBubble(!ChatBubble);
   };
-
-  useEffect(() => {
-    const storedMessagesString = localStorage.getItem("chat");
-    if (storedMessagesString != null) {
-      setHistoryMessages(JSON.parse(storedMessagesString));
-    }
-  }, []);
-
-  useEffect(() => {
-    if (messages.length === 1) return;
-    localStorage.setItem("chat", JSON.stringify(historyMessages));
-  }, [historyMessages]);
-
   return (
     <main
       className={`w-full h-screen overflow-scroll relative ${inter.className}`}
@@ -133,7 +119,10 @@ export default function Home() {
               </>
             ) : (
               <div>
-                {messages.map((message, index) => (
+                {error ? (
+                  <div className="pb-2 text-center text-red-500">{error}</div>
+                ) : null}
+                {messages.map((message: Message, index: number) => (
                   <div
                     className={`max-w-64 text-white p-2 mb-2 rounded-lg ${
                       message.role === "user"
@@ -145,34 +134,29 @@ export default function Home() {
                     {message.content}
                   </div>
                 ))}
+                {loading ? <DotPulseLoading /> : null}
               </div>
             )}
           </div>
           {/* Chat Input */}
-          <div className="w-full flex gap-2 items-center p-2">
+          <div className="w-full p-2">
             <input
               type="text"
               placeholder="Enter your queries..."
-              className="w-11/12 p-1 border-b border-gray-400 focus:outline-none"
+              className="w-full p-1 border-b border-gray-400 focus:outline-none"
               value={query}
               onChange={handleQueryChange}
               onKeyDown={handleEnterClick}
             />
-            <button
-              onClick={handleQuerySubmit}
-              className="w-1/12 h-full flex flex-col justify-center items-end"
-            >
-              <PaperPlaneIcon className="text-gray-500 w-5 h-5" />
-            </button>
           </div>
           {/* Chat Footer */}
-          <div className="flex justify-between items-center px-2 pt-1 pb-3">
+          <div className="flex flex-row-reverse justify-between items-center px-2 pt-1 pb-3">
             <div className="flex gap-2">
               <button
-                onClick={handleChatButtonClick}
+                onClick={handleHistoryButtonClick}
                 className="flex justify-center items-center"
               >
-                <ChatBubbleIcon className="text-gray-500 w-5 h-5" />
+                <CounterClockwiseClockIcon className="text-gray-500 w-5 h-5" />
               </button>
             </div>
             <div className="text-xs font-bold text-gradient">
