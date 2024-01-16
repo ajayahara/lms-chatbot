@@ -1,8 +1,6 @@
+import { Message } from "@/types";
 import OpenAI from "openai";
-type Message = {
-  role: "system" | "user" | "assistant";
-  content: string;
-};
+
 const openai = new OpenAI({
   apiKey:process.env.OPENAI_API_KEY||"",
   dangerouslyAllowBrowser:true

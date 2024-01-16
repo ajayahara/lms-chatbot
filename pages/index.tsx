@@ -1,27 +1,26 @@
 import Image from "next/image";
 import { Inter } from "next/font/google";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
   CaretDownIcon,
   CounterClockwiseClockIcon,
+  PlusIcon,
 } from "@radix-ui/react-icons";
 import { chatResponse } from "@/lib/openai";
 import { DotPulseLoading } from "@/components/bot/loader/DotPulseLoading";
+import { Interaction, Message } from "@/types";
+import { interactions, chats } from "@/db";
 
 const inter = Inter({ subsets: ["latin"] });
-
-// Types
-type Message = {
-  role: "system" | "user" | "assistant";
-  content: string;
-};
 
 export default function Home() {
   // State
   const [open, setOpen] = useState<boolean>(false);
-  const [ChatBubble, setChatBubble] = useState<boolean>(false);
+  const [isChat, setIsChat] = useState<boolean>(true);
   const [query, setQuery] = useState<string>("");
-  const [historyMessages, setHistoryMessages] = useState<Message[]>([]);
+  const [history, setHistory] = useState<Interaction[]>([]);
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
@@ -30,12 +29,12 @@ export default function Home() {
   ]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
-  const [interactionId, setInteractionId] = useState(null);
+  const searchParams = useSearchParams();
+  const interaction_id = searchParams.get("interaction_id");
 
   const handleBoatClick = () => {
     setOpen(!open);
   };
-
   const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (error) {
       setError("");
@@ -48,7 +47,6 @@ export default function Home() {
     setLoading(true);
     const userMessage: Message = { role: "user", content: query };
     setMessages((prevMessages) => [...prevMessages, userMessage]);
-    setHistoryMessages((prevHistory) => [...prevHistory, userMessage]);
     setQuery("");
     try {
       const assistantResponse = await chatResponse([...messages, userMessage]);
@@ -57,20 +55,33 @@ export default function Home() {
         content: assistantResponse,
       };
       setMessages((prevMessages) => [...prevMessages, assistantMessage]);
-      setHistoryMessages((prevHistory) => [
-        ...prevHistory,
-        { ...assistantMessage },
-      ]);
     } catch (err) {
       console.log(err);
       setError("Error while connecting to server");
     }
     setLoading(false);
   };
-  
-  const handleHistoryButtonClick = () => {
-    setChatBubble(!ChatBubble);
-  };
+
+  useEffect(() => {
+    setIsChat(true);
+    console.log("interactionId", interaction_id);
+    // fetch messages related to the inraction id here;
+    if (!interaction_id) {
+      setMessages([
+        {
+          role: "assistant",
+          content: "Hi there 👋, How can I help you today?",
+        },
+      ]);
+      return;
+    }
+    setMessages(chats.filter((el) => el.interaction_id == interaction_id));
+  }, [interaction_id]);
+  useEffect(() => {
+    // fetch chat history here related to the user here;
+    setHistory(interactions);
+  }, []);
+
   return (
     <main
       className={`w-full h-screen overflow-scroll relative ${inter.className}`}
@@ -102,22 +113,7 @@ export default function Home() {
           </div>
           {/* Chat Messages */}
           <div className="flex flex-col w-full p-2 h-3/4 overflow-y-scroll text-sm example">
-            {ChatBubble ? (
-              <>
-                {historyMessages.map((message, index) => (
-                  <div
-                    className={`max-w-64 text-white p-2 mb-2 rounded-lg ${
-                      message.role === "user"
-                        ? "bg-blue-600 self-end"
-                        : "bg-gray-400 shadow self-start"
-                    }`}
-                    key={index}
-                  >
-                    {message.content}
-                  </div>
-                ))}
-              </>
-            ) : (
+            {isChat ? (
               <div className="w-full flex flex-col">
                 {error ? (
                   <div className="pb-2 text-center text-red-500">{error}</div>
@@ -136,6 +132,31 @@ export default function Home() {
                 ))}
                 {loading ? <DotPulseLoading /> : null}
               </div>
+            ) : (
+              <div className="flex flex-col">
+                <div>
+                  <button
+                    onClick={() => setIsChat(true)}
+                    className="text-blue-600 text-xs"
+                  >
+                    &larr; Back
+                  </button>
+                </div>
+                <div className="text-left text-lg font-bold text-gray-500 mb-2">
+                  Chat History:
+                </div>
+                <div className="min-h-64 flex flex-col rounded shadow">
+                  {history.map((interaction: Interaction, index: number) => (
+                    <Link
+                      className="p-2 font-bold text-md text-gray-400"
+                      href={`/?interaction_id=${interaction.id}`}
+                      key={index}
+                    >
+                      &rarr; {interaction.title}
+                    </Link>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
           {/* Chat Input */}
@@ -153,11 +174,19 @@ export default function Home() {
           <div className="flex flex-row-reverse justify-between items-center px-2 pt-1 pb-3">
             <div className="flex gap-2">
               <button
-                onClick={handleHistoryButtonClick}
+                title="Show history"
+                onClick={() => setIsChat(false)}
                 className="flex justify-center items-center"
               >
                 <CounterClockwiseClockIcon className="text-gray-500 w-5 h-5" />
               </button>
+              <Link
+                title="New chat"
+                className="flex justify-center items-center"
+                href="/"
+              >
+                <PlusIcon className="text-gray-500 w-5 h-5" />
+              </Link>
             </div>
             <div className="text-xs font-bold text-gradient">
               By masaischool.com
