@@ -118,13 +118,13 @@ export default function Home() {
                 ))}
               </>
             ) : (
-              <div>
+              <div className="w-full flex flex-col">
                 {error ? (
                   <div className="pb-2 text-center text-red-500">{error}</div>
                 ) : null}
                 {messages.map((message: Message, index: number) => (
                   <div
-                    className={`max-w-64 text-white p-2 mb-2 rounded-lg ${
+                    className={`max-w-3/4 text-white p-2 mb-2 rounded-lg ${
                       message.role === "user"
                         ? "bg-blue-600 self-end"
                         : "bg-gray-400 shadow self-start"
