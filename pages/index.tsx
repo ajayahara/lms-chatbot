@@ -43,19 +43,17 @@ export default function Home() {
     if (!query) return;
 
     // Add user message to both history and current messages
-    const userMessage = { role: "user", content: query };
+    const userMessage:Message = { role: "user", content: query };
     setMessages((prevMessages) => [...prevMessages, userMessage]);
     setHistoryMessages((prevHistory) => [...prevHistory, { ...userMessage }]);
 
     setQuery("");
-
     try {
       const assistantResponse = await chatResponse([...messages, userMessage]);
-      const assistantMessage = {
+      const assistantMessage:Message = {
         role: "assistant",
         content: assistantResponse,
       };
-
       setMessages((prevMessages) => [...prevMessages, assistantMessage]);
       setHistoryMessages((prevHistory) => [...prevHistory, { ...assistantMessage }]);
     } catch (error) {
