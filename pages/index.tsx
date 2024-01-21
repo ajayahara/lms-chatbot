@@ -45,10 +45,12 @@ export default function Home() {
     if (e.key !== "Enter") return;
     if (!query) return;
     setLoading(true);
-    const userMessage: Message = { role: "user", content: query };
-    setMessages((prevMessages) => [...prevMessages, userMessage]);
-    setQuery("");
     try {
+      const userMessage: Message = { role: "user", content: query };
+      setMessages((prevMessages) => [...prevMessages, userMessage]);
+      setQuery("");
+      const send_message_audio = new Audio("/send_message_tone.mp3");
+      await send_message_audio.play();
       const assistantResponse = await chatResponse([...messages, userMessage]);
       const assistantMessage: Message = {
         role: "assistant",
@@ -57,6 +59,9 @@ export default function Home() {
       setMessages((prevMessages) => [...prevMessages, assistantMessage]);
     } catch (err) {
       console.log(err);
+      const error_message_audio = new Audio("/error_message_tone.mp3");
+      error_message_audio.volume=0.2;
+      await error_message_audio.play();
       setError("Error while connecting to server");
     }
     setLoading(false);
@@ -94,7 +99,7 @@ export default function Home() {
           }`}
         >
           {/* Chat Header */}
-          <div className="bg-[#1a66e8] sticky z-50">
+          <div className="bg-[#211670] sticky z-50">
             <div className="flex items-center justify-between p-2">
               <div className="flex items-center gap-2">
                 <Image
@@ -122,8 +127,8 @@ export default function Home() {
                   <div
                     className={`max-w-3/4 text-white p-2 mb-2 rounded-lg ${
                       message.role === "user"
-                        ? "bg-blue-600 self-end"
-                        : "bg-gray-400 shadow self-start"
+                        ? "bg-[#211670] self-end"
+                        : "bg-[#a6a2e5] shadow self-start"
                     }`}
                     key={index}
                   >
@@ -188,7 +193,7 @@ export default function Home() {
                 <PlusIcon className="text-gray-500 w-5 h-5" />
               </Link>
             </div>
-            <div className="text-xs font-bold text-gradient">
+            <div className="text-xs font-bold text-[#211670]">
               By masaischool.com
             </div>
           </div>
@@ -197,7 +202,7 @@ export default function Home() {
         {open ? (
           <button
             onClick={handleBoatClick}
-            className="flex justify-center items-center p-1.5 bg-blue-600 rounded-full"
+            className="flex justify-center items-center p-1.5 bg-[#211670] rounded-full"
           >
             <CaretDownIcon className="text-white w-10 h-10" />
           </button>
