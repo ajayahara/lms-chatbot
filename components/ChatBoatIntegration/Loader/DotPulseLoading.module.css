@@ -1,0 +1,76 @@
+.stage {
+  @apply p-2 px-4 mb-2 rounded-lg self-start;
+  position: relative;
+  overflow: hidden;
+}
+.dot_pulse {
+  position: relative;
+  left: -9999px;
+  width: 10px;
+  height: 10px;
+  border-radius: 5px;
+  background-color: #9880ff;
+  color: #9880ff;
+  box-shadow: 9999px 0 0 -5px;
+  animation: dot_pulse 1.5s infinite linear;
+  animation-delay: 0.25s;
+}
+.dot_pulse::before,
+.dot_pulse::after {
+  content: "";
+  display: inline-block;
+  position: absolute;
+  top: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 5px;
+  background-color: #9880ff;
+  color: #9880ff;
+}
+.dot_pulse::before {
+  box-shadow: 9984px 0 0 -5px;
+  animation: dot_pulse-before 1.5s infinite linear;
+  animation-delay: 0s;
+}
+.dot_pulse::after {
+  box-shadow: 10014px 0 0 -5px;
+  animation: dot_pulse-after 1.5s infinite linear;
+  animation-delay: 0.5s;
+}
+
+@keyframes dot_pulse-before {
+  0% {
+    box-shadow: 9984px 0 0 -5px;
+  }
+  30% {
+    box-shadow: 9984px 0 0 2px;
+  }
+  60%,
+  100% {
+    box-shadow: 9984px 0 0 -5px;
+  }
+}
+@keyframes dot_pulse {
+  0% {
+    box-shadow: 9999px 0 0 -5px;
+  }
+  30% {
+    box-shadow: 9999px 0 0 2px;
+  }
+  60%,
+  100% {
+    box-shadow: 9999px 0 0 -5px;
+  }
+}
+@keyframes dot_pulse-after {
+  0% {
+    box-shadow: 10014px 0 0 -5px;
+  }
+  30% {
+    box-shadow: 10014px 0 0 2px;
+  }
+  60%,
+  100% {
+    box-shadow: 10014px 0 0 -5px;
+  }
+}
