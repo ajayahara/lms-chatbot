@@ -13,7 +13,7 @@
 // import { Interaction, Message } from "@/types";
 // import { interactions, chats } from "@/db";
 
-import AIBot from "@/components/ChatBoatIntegration/ChatBoat"
+import AIBot from "@/components/ChatBoatIntegration/ChatBoat";
 
 // const inter = Inter({ subsets: ["latin"] });
 
@@ -227,12 +227,49 @@ import AIBot from "@/components/ChatBoatIntegration/ChatBoat"
 //   );
 // }
 
-const index = () => {
-  return (
-    <main className="relative h-screen w-full">
-      <AIBot/>
-    </main>
-  )
-}
+// const index = () => {
+//   return (
+//     <main className="relative h-screen w-full">
+//       <AIBot/>
+//     </main>
+//   )
+// }
 
-export default index
+// export default index
+import { useRecognization } from "@/hook/useRecognization";
+import { useEffect, useState } from "react";
+import { HiMicrophone } from "react-icons/hi2";
+export default function Home() {
+  const { text, isListining, startListining, stopListining } =
+    useRecognization();
+  const [client, setClient] = useState<boolean>(false);
+  const hasSupportRecognization = true;
+  useEffect(() => {
+    setClient(true);
+  }, []);
+
+  return (
+    <main
+      className="w-full h-screen flex justify-center items-center"
+      suppressHydrationWarning
+    >
+      {!hasSupportRecognization ? (
+        <div>Browser did not support SpeechRecognition</div>
+      ) : (
+        <div className="bg-[#211670] w-1/4 flex flex-col p-2 gap-3">
+          <div className="text-blue-800 text-center bg-white overflow-y-scroll h-32 example">
+            {text}
+          </div>
+          <button
+            className="w-10 h-10 m-auto rounded-full flex justify-center items-center bg-white"
+            onClick={isListining ? stopListining : startListining}
+          >
+            <HiMicrophone
+              className={`text-blue-800 ${isListining ? "animate-pulse" : ""}`}
+            />
+          </button>
+        </div>
+      )}
+    </main>
+  );
+}
