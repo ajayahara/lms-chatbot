@@ -1,36 +1,63 @@
 import { useEffect, useState } from "react";
 
-let recognization: any = null;
-if (typeof window !== "undefined" && "webkitSpeechRecognition" in window) {
-  recognization = new webkitSpeechRecognition();
-  recognization.continuous = true;
-  recognization.lang = "en-US";
-}
 export const useRecognization = () => {
-  const [text, setText] = useState<string | null>("");
+  const [recognization, setRecognization] = useState<SpeechRecognition | null>(
+    null
+  );
+  const [text, setText] = useState<string>("");
   const [isListining, setIsListining] = useState<boolean>(false);
-  useEffect(() => {
-    if (!recognization) return;
-    recognization.onresult = (event: SpeechRecognitionEvent) => {
-        setText(event.results[0][0].transcript)
-      recognization.stop();
-      setIsListining(false);
-    };
-  }, []);
   const startListining = () => {
+    if (!recognization) return;
     setText("");
     setIsListining(true);
     recognization.start();
   };
   const stopListining = () => {
+    if (!recognization) return;
     setIsListining(false);
     recognization.stop();
   };
+
+  useEffect(() => {
+    if(!text) return;
+    const utterance:SpeechSynthesisUtterance = new SpeechSynthesisUtterance(text);
+    const voices=speechSynthesis.getVoices();
+    utterance.voice=voices[5]||voices[2]
+    speechSynthesis.speak(utterance);
+
+  }, [text]);
+  useEffect(() => {
+    const SpeechRecognition: SpeechRecognition | null =
+      new window.webkitSpeechRecognition() || null;
+    if (SpeechRecognition) {
+      SpeechRecognition.continuous = true;
+      SpeechRecognition.lang = "en-US";
+      setRecognization(SpeechRecognition);
+    }
+  }, []);
+  useEffect(() => {
+    if (!recognization) return;
+    recognization.onresult = (event: SpeechRecognitionEvent) => {
+      const { results } = event;
+      setText(
+        (preText) => preText + " " + results[results.length - 1][0].transcript
+      );
+    };
+    recognization.onstart=()=>{
+      console.log("Sound recognization start")
+    }
+    recognization.onend = () => {
+      setIsListining(false);
+      recognization.stop();
+    };
+    recognization.onerror=(event:SpeechRecognitionErrorEvent)=>{
+      console.log("Error occured",event);
+    }
+  }, [recognization]);
   return {
     text,
     isListining,
     startListining,
     stopListining,
-    hasSupportRecognization: !!recognization,
   };
 };
