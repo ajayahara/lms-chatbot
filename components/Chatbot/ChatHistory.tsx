@@ -34,7 +34,7 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({ toggleChatTab }) => {
       title: "Support Call",
       ticket_id: null,
       started_at: "2024-01-30T14:00:00",
-      ended_at: "2024-01-29T19:32:00",
+      ended_at: "2024-01-29T07:32:00",
     },
   ]);
   // const {currentUser} = useContext(AuthContext)
