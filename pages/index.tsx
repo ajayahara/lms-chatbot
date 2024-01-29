@@ -236,40 +236,97 @@ import AIBot from "@/components/ChatBoatIntegration/ChatBoat";
 // }
 
 // export default index
-import { useRecognization } from "@/hook/useRecognization";
-import { useEffect, useState } from "react";
-import { HiMicrophone } from "react-icons/hi2";
-export default function Home() {
-  const { text, isListining, startListining, stopListining } =
-    useRecognization();
-  const [client, setClient] = useState<boolean>(false);
-  const hasSupportRecognization = true;
-  useEffect(() => {
-    setClient(true);
-  }, []);
+// import { useRecognization } from "@/hook/useRecognization";
+// import { useEffect, useState } from "react";
+// import { HiMicrophone } from "react-icons/hi2";
+// import { useTextToSpeech } from "@/hook/useTextToSpeech";
+
+// export default function Home() {
+//   const { text, isListining, startListining, stopListining } =
+//     useRecognization();
+//   const [client, setClient] = useState<boolean>(false);
+//   const hasSupportRecognization = true;
+//   useEffect(() => {
+//     setClient(true);
+//   }, []);
+
+//   return (
+//     <main
+//       className="w-full h-screen flex justify-center items-center"
+//       suppressHydrationWarning
+//     >
+//       {!hasSupportRecognization ? (
+//         <div>Browser did not support SpeechRecognition</div>
+//       ) : (
+//         <div className="bg-[#211670] w-1/4 flex flex-col p-2 gap-3">
+//           <div className="text-blue-800 text-center bg-white overflow-y-scroll h-32 example">
+//             {text}
+//           </div>
+//           <button
+//             className="w-10 h-10 m-auto rounded-full flex justify-center items-center bg-white"
+//             onClick={isListining ? stopListining : startListining}
+//           >
+//             <HiMicrophone
+//               className={`text-blue-800 ${isListining ? "animate-pulse" : ""}`}
+//             />
+//           </button>
+//         </div>
+//       )}
+//     </main>
+//   );
+// }
+
+
+// // text to Speech
+// export  function TextToSpeechComponent() {
+//   const { speak, hasSupportTextToSpeech } = useTextToSpeech();
+//   const [textToSpeak, setTextToSpeak] = useState<string>("Hello, this is a test.");
+
+//   const handleSpeak = () => {
+//     speak(textToSpeak);
+//   };
+
+//   return (
+//     <div>
+//       {hasSupportTextToSpeech ? (
+//         <>
+//           <textarea
+//             value={textToSpeak}
+//             onChange={(e) => setTextToSpeak(e.target.value)}
+//             rows={4}
+//             cols={50}
+//           />
+//           <button onClick={handleSpeak}>Speak</button>
+//         </>
+//       ) : (
+//         <div>Text-to-speech is not supported in this browser.</div>
+//       )}
+//     </div>
+//   );
+// }
+
+
+// new code 
+
+import React, { useState } from "react";
+import { useVoiceRecognition, useTextToSpeech } from "@/hook/speech";
+
+export default function VoiceSearch() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const { startListening, stopListening } = useVoiceRecognition(handleRecognitionResult);
+  const { speak } = useTextToSpeech();
+
+  function handleRecognitionResult(result: string) {  // Specify the type for the 'result' parameter
+    setSearchQuery(result);
+    speak( result);
+  }
 
   return (
-    <main
-      className="w-full h-screen flex justify-center items-center"
-      suppressHydrationWarning
-    >
-      {!hasSupportRecognization ? (
-        <div>Browser did not support SpeechRecognition</div>
-      ) : (
-        <div className="bg-[#211670] w-1/4 flex flex-col p-2 gap-3">
-          <div className="text-blue-800 text-center bg-white overflow-y-scroll h-32 example">
-            {text}
-          </div>
-          <button
-            className="w-10 h-10 m-auto rounded-full flex justify-center items-center bg-white"
-            onClick={isListining ? stopListining : startListining}
-          >
-            <HiMicrophone
-              className={`text-blue-800 ${isListining ? "animate-pulse" : ""}`}
-            />
-          </button>
-        </div>
-      )}
-    </main>
+    <div>
+      <h1>Voice Search</h1>
+      <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+      <button onClick={startListening}>Start Listening</button>
+      <button onClick={stopListening}>Stop Listening</button>
+    </div>
   );
 }
